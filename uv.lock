@@ -1,6 +1,13 @@
 version = 1
 requires-python = ">=3.12"
 
+[manifest]
+members = [
+    "plugin-elasticsearch",
+    "unictl",
+    "unictl-workspace",
+]
+
 [[package]]
 name = "click"
 version = "8.1.8"
@@ -44,6 +51,11 @@ wheels = [
 ]
 
 [[package]]
+name = "plugin-elasticsearch"
+version = "0.1.0"
+source = { editable = "packages/plugin-elasticsearch" }
+
+[[package]]
 name = "pygments"
 version = "2.18.0"
 source = { registry = "https://pypi.org/simple" }
@@ -68,7 +80,7 @@ wheels = [
 [[package]]
 name = "unictl"
 version = "0.1.0"
-source = { editable = "." }
+source = { editable = "packages/unictl" }
 dependencies = [
     { name = "click" },
     { name = "rich" },
@@ -79,3 +91,8 @@ requires-dist = [
     { name = "click", specifier = ">=8.1.8" },
     { name = "rich", specifier = ">=13.9.4" },
 ]
+
+[[package]]
+name = "unictl-workspace"
+version = "0.1.0"
+source = { virtual = "." }
