@@ -2,9 +2,19 @@ import click
 from rich.console import Console
 from rich.prompt import Prompt
 from rich.panel import Panel
+from rich.table import Table
 
 console = Console()
 active_plugin = None
+
+# This is a placeholder for available plugins and their descriptions.
+# In a real implementation, this would be dynamically populated based on installed plugins.
+AVAILABLE_PLUGINS = {
+    "elasticsearch": "Manage and query Elasticsearch clusters",
+    "kubernetes": "Orchestrate and manage Kubernetes resources",
+    "docker": "Build, run, and manage Docker containers",
+    "aws": "Control and monitor AWS cloud services"
+}
 
 @click.command()
 def main():
@@ -26,10 +36,15 @@ def handle_command(command):
     global active_plugin
     if command.startswith('/activate'):
         _, plugin = command.split(maxsplit=1)
-        active_plugin = plugin
-        console.print(f"[green]Activated plugin: {plugin}[/green]")
+        if plugin in AVAILABLE_PLUGINS:
+            active_plugin = plugin
+            console.print(f"[green]Activated plugin: {plugin}[/green]")
+        else:
+            console.print(f"[red]Plugin '{plugin}' not found.[/red]")
     elif command == '/help':
         show_help()
+    elif command == '/list':
+        list_plugins()
     else:
         console.print(f"[red]Unknown command: {command}[/red]")
 
@@ -41,10 +56,22 @@ def show_help():
     help_text = """
     Available commands:
     /activate <plugin>  - Activate a specific plugin
+    /list               - List all available plugins
     /help               - Show this help message
     exit                - Exit the program
     """
     console.print(Panel(help_text, title="Help", expand=False))
+
+def list_plugins():
+    table = Table(show_header=False)
+    table.add_column(style="cyan")
+    table.add_column(style="magenta")
+    
+    for plugin, description in AVAILABLE_PLUGINS.items():
+        name = f"{plugin} (*)" if plugin == active_plugin else plugin
+        table.add_row(name, description)
+    
+    console.print(table)
 
 if __name__ == "__main__":
     main()
