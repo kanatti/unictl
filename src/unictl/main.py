@@ -20,12 +20,15 @@ AVAILABLE_PLUGINS = {
 def main():
     """Unictl: AI-powered unified control for your systems."""
     console.print(Panel("Unictl: AI-powered unified control for your systems", expand=False))
+    console.print("[yellow italic]Tip: Type '/help' to see available commands.[/yellow italic]")
 
     while True:
         prompt = f"[bold]unictl{':' + active_plugin if active_plugin else ''}>[/bold]"
         user_input = Prompt.ask("\n" + prompt)
         
-        if user_input.lower() == 'exit':
+        if not user_input.strip():
+            continue
+        elif user_input.lower() == 'exit':
             break
         elif user_input.startswith('/'):
             handle_command(user_input)
