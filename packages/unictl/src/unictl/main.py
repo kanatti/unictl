@@ -96,14 +96,13 @@ def process_input(user_input):
                 for tool_call in message.tool_calls:
                     function_name = tool_call.function.name
                     arguments = tool_call.function.arguments
-                    console.print(f"[yellow]Calling tool -- {function_name}[/yellow]")
-                    
                     try:
                         parsed_args = json.loads(arguments)
+                        system_info(f"Calling tool -- {function_name} with arguments: {json.dumps(parsed_args, indent=2)}")
                         result = active_client.run_tool(function_name, **parsed_args)
                         if isinstance(result, (dict, list)):
                             pretty_json = json.dumps(result, indent=2)
-                            syntax = Syntax(pretty_json, "json", theme="monokai", line_numbers=True)
+                            syntax = Syntax(pretty_json, "json", theme="monokai", line_numbers=False)
                             console.print(Panel(syntax, title="Tool Output", expand=False))
                         else:
                             console.print(Panel(str(result), title="Tool Output", expand=False))

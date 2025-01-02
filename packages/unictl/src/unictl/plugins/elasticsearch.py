@@ -44,7 +44,7 @@ class ElasticsearchPlugin(PluginBase):
         elif tool_name == "get-indices":
             prefix = kwargs.get("prefix", "")
             indices = self._make_request(f"/_cat/indices/{prefix}*?format=json")
-            return {"indices": [index["index"] for index in indices]}
+            return indices
         else:
             raise ValueError(f"Unknown tool: {tool_name}")
 
