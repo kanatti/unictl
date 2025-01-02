@@ -3,9 +3,12 @@ from rich.console import Console
 from rich.prompt import Prompt
 from rich.panel import Panel
 from rich.table import Table
+from litellm import completion
+import os
 
 console = Console()
 active_plugin = None
+active_client = None
 
 # This is a placeholder for available plugins and their descriptions.
 # In a real implementation, this would be dynamically populated based on installed plugins.
@@ -16,9 +19,43 @@ AVAILABLE_PLUGINS = {
     "aws": "Control and monitor AWS cloud services"
 }
 
+class ElasticsearchClient:
+    def get_tools(self):
+        return [
+            {
+                "type": "function",
+                "function": {
+                    "name": "get-cluster-health",
+                    "description": "Get health of Elasticsearch cluster",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {},
+                        "required": []
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "get-indices",
+                    "description": "Get indices present on the Elasticsearch cluster",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "prefix": {
+                                "type": "string",
+                                "description": "Prefix to match indices by.",
+                            },
+                        },
+                        "required": ["prefix"],
+                    }
+                }
+            }
+        ]
+
 @click.command()
 def main():
-    """Unictl: AI-powered unified control for your systems."""
+    global active_plugin, active_client
     console.print(Panel("Unictl: AI-powered unified control for your systems", expand=False))
     console.print("[yellow italic]Tip: Type '/help' to see available commands.[/yellow italic]")
 
@@ -36,11 +73,13 @@ def main():
             process_input(user_input)
 
 def handle_command(command):
-    global active_plugin
+    global active_plugin, active_client
     if command.startswith('/activate'):
         _, plugin = command.split(maxsplit=1)
         if plugin in AVAILABLE_PLUGINS:
             active_plugin = plugin
+            if plugin == "elasticsearch":
+                active_client = ElasticsearchClient()
             console.print(f"[green]Activated plugin: {plugin}[/green]")
         else:
             console.print(f"[red]Plugin '{plugin}' not found.[/red]")
@@ -52,8 +91,30 @@ def handle_command(command):
         console.print(f"[red]Unknown command: {command}[/red]")
 
 def process_input(user_input):
-    console.print(f"[italic]Processing: {user_input}[/italic]")
-    console.print("This is a placeholder response.")
+    global active_plugin, active_client
+    if active_plugin and active_client:
+        tools = active_client.get_tools()
+        try:
+            response = completion(
+                model="bedrock/anthropic.claude-3-5-sonnet-20240620-v1:0",
+                messages=[
+                    {"role": "system", "content": f"You are an AI assistant for the {active_plugin} plugin. Use the provided tools to help the user."},
+                    {"role": "user", "content": user_input}
+                ],
+                tools=tools,
+                tool_choice="auto"
+            )
+            message = response['choices'][0]['message']
+            console.print(message.content)
+            if message.tool_calls:
+                console.print("[yellow]Tool Calls:[/yellow]")
+                for tool_call in response['choices'][0]['message']['tool_calls']:
+                    console.print(f"Function: {tool_call['function']['name']}")
+                    console.print(f"Arguments: {tool_call['function']['arguments']}")
+        except Exception as e:
+            console.print(f"[red]Error: {str(e)}[/red]")
+    else:
+        console.print("[yellow]Please activate a plugin first using /activate <plugin_name>[/yellow]")
 
 def show_help():
     help_text = """

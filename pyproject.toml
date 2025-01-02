@@ -11,4 +11,3 @@ members = ["packages/*"]
 
 [tool.uv.sources]
 unictl = { workspace = true }
-uni-elasticsearch = { workspace = true }

@@ -1,2 +1,2 @@
-alias unictl="uv un --package unictl unictl"
-alias uni-elasticsearch="uv run --package uni-elasticsearch client"
+alias unictl="AWS_PROFILE=gen-ai-poc AWS_REGION=us-west-2 uv run --package unictl unictl"
+alias mcp-elasticsearch="uv run --package mcp-elasticsearch client"
